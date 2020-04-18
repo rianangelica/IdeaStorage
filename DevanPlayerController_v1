@@ -1,0 +1,68 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerController : MonoBehaviour
+{
+    public float moveSpeed;
+    private Rigidbody2D rb;
+
+    public float jumpSpeed;
+
+    public Transform groundCheck;
+    public float groundCheckRadius;
+    public LayerMask whatIsGround;
+
+    public bool isGrounded;
+
+    private Animator anim;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
+    }
+
+    void Update()
+    {
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, whatIsGround);
+
+        if (Input.GetAxisRaw ("Horizontal") > 0f)
+        {
+            rb.velocity = new Vector3(moveSpeed, rb.velocity.y, 0f);
+            transform.localScale = new Vector3(.8f, .8f, 1f);
+        }
+        else if (Input.GetAxisRaw("Horizontal") < 0f)
+        {
+            rb.velocity = new Vector3(-moveSpeed, rb.velocity.y, 0f);
+            transform.localScale = new Vector3(-.8f, .8f, 1f);
+        }
+        else
+        {
+            rb.velocity = new Vector3(0f, rb.velocity.y, 0f);
+        }
+
+        if (Input.GetButtonDown ("Jump") && isGrounded)
+        {
+            rb.velocity = new Vector3(rb.velocity.x, jumpSpeed, 0f);
+        }
+        anim.SetFloat("Speed", Mathf.Abs(rb.velocity.x));
+        anim.SetBool("Grounded", isGrounded);
+    }
+
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "MovingPlatform")
+        {
+            transform.parent = other.transform;
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D other)
+    {
+        if(other.gameObject.tag == "MovingPlatform")
+        {
+            transform.parent = null;
+        }
+    }
+}
